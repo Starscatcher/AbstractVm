@@ -21,13 +21,8 @@ int             main(int ac, char **av)
         usage();
         return (1);
     }
-    try
-    {
-        vm.stackProcessing();
-    }
-    catch()
-    {
 
-    }
+    //vm.stackProcessing();
+
     return (0);
 }

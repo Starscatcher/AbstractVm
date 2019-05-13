@@ -3,11 +3,14 @@
 
 #include "abstractVm.h"
 #include "IOperand.h"
-#include "stack"
+#include "vector"
+#include "OperandFactory.h"
 
 class Vm {
     private:
-        std::stack <IOperand const *> _stack;
+        std::vector <IOperand const *>	_stack;
+  		std::vector <std::string>		_instructions;
+  		int 							_iterator;
     public:
         Vm();
         ~Vm();
@@ -28,7 +31,6 @@ class Vm {
         int     readStdin();
         int     readFile(std::string fileName);
         int     checkInstruction(std::string instruction);
-
 };
 
 #endif
