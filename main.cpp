@@ -1,14 +1,14 @@
 #include <iostream>
 #include "Vm.h"
 
-static void    usage()
+static void		usage()
 {
     std::cout << "USAGE :" << std::endl;
     std::cout << " ./avm" << std::endl;
     std::cout << " ./avm <filename>" << std::endl;
 }
 
-int             main(int ac, char **av)
+int				main(int ac, char **av)
 {
     Vm  vm;
 
@@ -23,9 +23,13 @@ int             main(int ac, char **av)
     }
     if (vm.getCorrectInstruction())
     {
-        //try
-        vm.makeInstructions();
-        //catch
+		try {
+			vm.makeInstructions();
+		}
+		catch (Vm::VmException &e) {
+			std::cout	<< "\033[1;31m" << "Error at [" << vm.getLine() + 1 << "] line -> ["
+						 << e.what() << "]" << "\033[0m" << std::endl;
+		}
     }
     return (0);
 }
