@@ -9,8 +9,9 @@
 class Vm {
     private:
         std::vector <IOperand const *>	_stack;
-  		std::vector <std::string>		_instructions;
-  		int 							_iterator;
+        std::vector <std::string>       *_instructions;
+        int                             _iterator;
+        bool                            _correctInstructions;
     public:
         Vm();
         ~Vm();
@@ -31,6 +32,12 @@ class Vm {
         int     readStdin();
         int     readFile(std::string fileName);
         int     checkInstruction(std::string instruction);
+        int     makeInstructions();
+        int     createInstructionsVector(const std::string instruction);
+        int     error(const std::string line, unsigned long lineNum);
+        int     error(unsigned long lineNum);
+
+        bool    getCorrectInstruction();
 };
 
 #endif

@@ -21,8 +21,11 @@ int             main(int ac, char **av)
         usage();
         return (1);
     }
-
-    //vm.stackProcessing();
-
+    if (vm.getCorrectInstruction())
+    {
+        //try
+        vm.makeInstructions();
+        //catch
+    }
     return (0);
 }
