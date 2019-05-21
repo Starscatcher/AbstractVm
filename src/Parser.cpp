@@ -4,13 +4,6 @@
 #include <fstream>
 #include "../inc/Parser.h"
 
-Parser::Parser() {
-	_lineNum = -1;
-	_correctInstructions = true;
-}
-
-Parser::~Parser() {}
-
 Parser      &Parser::operator=(Parser const &src) {
 	if (this == &src)
 		return (*this);
@@ -20,74 +13,49 @@ Parser      &Parser::operator=(Parser const &src) {
 	return (*this);
 }
 
-std::vector<std::string> Parser::parseWithoutValue(std::string line)
-{
-	std::vector<std::string> parseInt;
+vecStr Parser::parseInstructionWithoutValue(std::string line) {
 	std::regex  rx("(\\w+)");
 	std::smatch	match;
 
 	std::regex_search(line, match, rx);
-	parseInt.push_back(match[1]);
-	return (parseInt);
+	return {match[1]};
 }
 
-std::vector<std::string> Parser::parseInt(std::string line)
-{
-	std::vector<std::string> parseInt;
+vecStr Parser::parseInstructionWithValue(std::string line, std::regex parse) {
 	std::smatch	match;
-	std::regex  rx("(\\w+)( +)(\\w+\\d+)\\((-?\\d+)\\)");
 
-	std::regex_search(line, match, rx);
-	parseInt.push_back(match[1]);
-	parseInt.push_back(match[3]);
-	parseInt.push_back(match[4]);
-	return (parseInt);
-}
-
-std::vector<std::string> Parser::parsePointed(std::string line)
-{
-	std::vector<std::string> parseInt;
-	std::smatch	match;
-	std::regex rx("(\\w+)( +)(\\w+)\\((-?\\d+.\\d+)\\)");
-
-	std::regex_search(line, match, rx);
-	parseInt.push_back(match[1]);
-	parseInt.push_back(match[3]);
-	parseInt.push_back(match[4]);
-	return (parseInt);
+	std::regex_search(line, match, parse);
+	return {match[1], match[3], match[4]};
 }
 
 void     Parser::checkInstruction(std::string line) {
 	std::regex commands("^( *)(pop|dump|add|sub|mul|div|mod|print|and|or|xor)( *)(\\;.*)?$");
 	std::regex intCommands("^( *)(push|assert)( *)+(int8|int16|int32)[\\(][-]?[0-9]+[\\)]( *)(\\;.*)?$");
 	std::regex floatCommands("^( *)(push|assert)( *)+(float|double)[\\(][-]?[0-9]+.[0-9]+[\\)]( *)(\\;.*?)?$");
-	std::vector<std::string>	parseInstr;
+	std::regex parseInt("(\\w+)( +)(\\w+\\d+)\\((-?\\d+)\\)");
+	std::regex parsePointed("(\\w+)( +)(\\w+)\\((-?\\d+.\\d+)\\)");
 
 	if (regex_match(line.begin(), line.end(), commands))
-		parseInstr = parseWithoutValue(line);
+		_instructions.push_back(parseInstructionWithoutValue(line));
 	else if (regex_match(line.begin(), line.end(), intCommands))
-		parseInstr = parseInt(line);
+		_instructions.push_back(parseInstructionWithValue(line, parseInt));
 	else if (regex_match(line.begin(), line.end(), floatCommands))
-		parseInstr = parsePointed(line);
+		_instructions.push_back(parseInstructionWithValue(line, parsePointed));
 	else
 		throw ParserException("There is no such instruction or the value does not match the type");
-	_instructions.push_back(parseInstr);
 }
 
 bool     Parser::isComment(std::string line) {
 	std::regex comment("^( *)(;{1})(.*)$");
 
-	if (regex_match(line.begin(), line.end(), comment))
-		return (true);
-	else
-		return (false);
+	return regex_match(line.begin(), line.end(), comment);
 }
-
 
 int     Parser::readStdin() {
 	std::string     line;
 
-	while (getline(std::cin, line)) {
+	while (getline(std::cin, line))
+	{
 		_lineNum++;
 		if (line == "exit") {
 			getline(std::cin, line);
@@ -107,26 +75,29 @@ int     Parser::readFile(const std::string& fileName) {
 	std::ifstream   fd(fileName);
 	std::string     line;
 
-	if (fd) {
-		while (getline(fd, line)) {
-			_lineNum++;
-			try {
-				if (line == "exit" && !getline(fd, line))
-					return (1);
-				else if (isComment(line) || line == "")
-					continue;
-				checkInstruction(line);
+	if (!fd)
+		throw ParserException("Something wrong with file");
+	while (getline(fd, line)) {
+		_lineNum++;
+		try {
+			if (line == "exit") {
+				if (!getline(fd, line))
+					return (0);
+				else
+					throw ParserException("Make sure that you don't have any instruction after EXIT");
 			}
-			catch (Parser::ParserException &e) {
-				std::cout	<< "\033[1;31m" << "Error at [" << _lineNum + 1 << "] line -> ["
-							 << e.what() << "]" << "\033[0m" << std::endl;
-				_correctInstructions = false;
+			else if (isComment(line) || line == "")
 				continue;
-			}
+			checkInstruction(line);
 		}
-		throw ParserException("Make sure that your instructions ends with EXIT instruction");
+		catch (Parser::ParserException &e) {
+			std::cout	<< "\033[1;31m" << "Error at [" << _lineNum + 1 << "] line -> ["
+							<< e.what() << "]" << "\033[0m" << std::endl;
+			_correctInstructions = false;
+			continue;
+		}
 	}
-	return (1);
+	throw ParserException("Make sure that your instructions ends with EXIT instruction");
 }
 
 int     Parser::getLineNum() {

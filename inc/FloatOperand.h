@@ -2,7 +2,6 @@
 #define FLOATOPERAND_H
 
 #include "IOperand.h"
-#include "abstractVm.h"
 
 class FloatOperand : public IOperand
 {

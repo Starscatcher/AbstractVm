@@ -5,16 +5,8 @@
 #define VAL 2
 
 Vm::Vm(std::vector <std::vector <std::string>> instructions) {
-	_type = {{"int8", INT8},
-			{"int16", INT16},
-			{"int32", INT32},
-			{"float", FLOAT},
-			{"double", DOUBLE}};
-	_lineNum = 0;
 	_instructions = instructions;
 }
-
-Vm::Vm() {}
 
 Vm::~Vm() {
 	for(int i = this->_stack.size() - 1; i >= 0 ; i--)
@@ -206,8 +198,7 @@ void    Vm::print() {
 		std::cout << (char)(std::stoi(_stack[_stack.size() - 1]->toString())) << std::endl;
 }
 
-void     Vm::makeInstructions()
-{
+void     Vm::makeInstructions() {
     for (_lineNum = 0; (size_t)_lineNum < _instructions.size(); _lineNum++) {
 			if (_instructions[_lineNum][0] == "push")
 				push();
